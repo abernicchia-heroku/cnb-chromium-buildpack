@@ -1,0 +1,82 @@
+# Cloud Native Buildpack for Chromium (amd64/arm64 compatible)
+
+This buildpack download and installs Chromium to Linux amd64/arm64 architectures. It's useful for testing purposes combined with Playwright and Puppeteer used in headless mode.
+It's compatible with [Heroku FIR](https://www.heroku.com/blog/next-generation-heroku-platform/).
+
+## Disclaimer
+
+The author of this article makes any warranties about the completeness, reliability and accuracy of this information. **Any action you take upon the information of this website is strictly at your own risk**, and the author will not be liable for any losses and damages in connection with the use of the website and the information provided. **None of the items included in this repository form a part of the Heroku Services.**
+
+## Prerequisites
+
+- A Heroku account
+- Heroku CLI installed
+- pack installed (for local development)
+- Docker installed (for local development)
+
+
+## Deployment Steps
+
+1. Create a new Heroku app (FIR):
+   ```bash
+   heroku create your-app-name
+   ```
+
+2. Deploy the application:
+   ```bash
+   git push heroku main
+   ```
+
+## Environment Variables
+
+The following environment variables are required for this app to run (see `app.json` for details):
+
+- `KONG_ADMIN_GUI_URL` (required): Public URL for Kong Manager GUI (e.g., https://my-kong-manager.herokuapp.com)
+- `KONG_ADMIN_GUI_API_URL` (required): External Admin API URL (e.g., https://admin-api.example.com)
+
+
+## ⚠️ Security Notice
+
+**This implementation does NOT provide a secured Kong Manager.**
+
+- There is no enforced HTTPS/SSL for the Kong Manager GUI.
+- No authentication or RBAC is enabled by default with Kon OSS.
+- The GUI is accessible to anyone who knows the URL.
+
+**Do NOT use this setup in production or for sensitive workloads without adding proper security controls (HTTPS, firewall, authentication, etc.).**
+
+## Configuration
+
+The Kong gateway is configured using the following files:
+- `kong.conf`: Main configuration file
+- `kong.yaml`: Declarative configuration for routes and services
+- `Dockerfile`: Container configuration and bootstrap script
+
+Environment variables are set via the Heroku dashboard or `app.json` and are required for proper operation.
+
+
+## Verification
+
+You can verify that Kong Manager is running properly by checking the logs:
+
+```bash
+heroku logs --tail
+```
+
+You should see messages indicating that Kong has started successfully and is listening for requests.
+
+Then you can open your Heorku app showing the Kong Manager GUI.
+
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
+
+## Support
+
+For issues and questions, please open an issue in the GitHub repository.
+

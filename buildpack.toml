@@ -3,7 +3,10 @@ api = "0.11"
 [buildpack]
   id = "heroku/chromium"
   version = "1.0.0"
-  name = chromium
+  name = "chromium"
+
+[[stacks]]
+id = "*"
 
 [[targets]]
 os = "linux"
@@ -12,3 +15,6 @@ arch = "arm64"
 [[targets]]
 os = "linux"
 arch = "amd64"
+
+# pack build cnb-chromium-buildpack --buildpack . --builder heroku/builder:24
+# pack buildpack package cnb-chromium-buildpack --format file
