@@ -17,7 +17,7 @@ The author of this article makes any warranties about the completeness, reliabil
 ## How to use
 
 1. Create a new Heroku app (FIR)
-2. add a `project.toml` at the root directoy and insert the following:
+2. add a `project.toml` at the root directoy and insert the following directives. Those installs chormium and its dependant libraries required at runtime:
    ```toml
    [[io.buildpacks.group]]
    id = "heroku/chromium"
@@ -57,8 +57,7 @@ The author of this article makes any warranties about the completeness, reliabil
    [[io.buildpacks.group]]
    uri = "heroku/deb-packages"
    ```
-3. The above directives are required to install chormium and its dependant libraries required at runtime
-4. Use CHROMIUM_VERSION to specify a chromium version. Supported versions are listed here https://playwright.dev/docs/release-notes
+4. Use CHROMIUM_VERSION to specify a chromium version. It can be set in the project.toml or as a Heroku env var (see https://devcenter.heroku.com/articles/build-time-config-vars).  Supported versions are listed here https://playwright.dev/docs/release-notes
 4. Commit and push to Heroku
 
 ## Create a local OCI image
