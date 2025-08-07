@@ -3,10 +3,6 @@ set -euo pipefail
 
 echo "---> chromium buildpack (CNB style)"
 
-# remove all the files in the buildpack working directory that are not required for the build
-# Use a more robust approach that handles already-deleted files gracefully
-find . -mindepth 1 -maxdepth 1 ! -name "project.toml" ! -name "src" ! -name "package.json" ! -name "yarn.lock" ! -name "tsconfig.json" ! -name "puppeteer.config.cjs" -print0 | xargs -0 rm -rf 2>/dev/null || true
-
 CHROMIUM_BUILD_DIR="${CNB_LAYERS_DIR}/chromium"
 
 # Use the version from env or default to '1139' (latest on Aug 6, 2025)
