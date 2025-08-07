@@ -1,6 +1,6 @@
 # Cloud Native Buildpack for Chromium (amd64/arm64 compatible)
 
-This buildpack download and installs Chromium to Linux amd64/arm64 architectures. It's useful for testing purposes combined with Playwright and Puppeteer used in headless mode.
+This buildpack downloads and installs Chromium to Linux amd64/arm64. It's useful for testing purposes combined with Playwright, Puppeteer (or similar) used in headless mode.
 It's compatible with [Heroku FIR](https://www.heroku.com/blog/next-generation-heroku-platform/).
 
 ## Disclaimer
@@ -14,59 +14,70 @@ The author of this article makes any warranties about the completeness, reliabil
 - pack installed (for local development)
 - Docker installed (for local development)
 
+## How to use
 
-## Deployment Steps
+1. Create a new Heroku app (FIR)
+2. add a `project.toml` at the root directoy and insert the following:
+   ```toml
+   [[io.buildpacks.group]]
+   id = "heroku/chromium"
+   uri = "https://github.com/abernicchia-heroku/cnb-chromium-buildpack/releases/download/v1.0.0/cnb-chromium-buildpack-linux-arm64.cnb"
 
-1. Create a new Heroku app (FIR):
+   [com.heroku.buildpacks.deb-packages]
+   install = [
+       # string version of a dependency to install
+       "fonts-noto-color-emoji",
+       "fonts-noto",
+       "fonts-liberation",
+       "fonts-ipafont-gothic",
+       "fonts-wqy-zenhei",
+       "fonts-thai-tlwg",
+       "fonts-khmeros",
+       "fonts-kacst",
+       "fonts-freefont-ttf",
+       "libxss1",
+       "dbus",
+       "dbus-x11",
+       "tini",
+       "poppler-utils",
+       "poppler-data",
+       "libatk1.0-0",
+       "libatk-bridge2.0-0",
+       "libdrm2",
+       "libxkbcommon0",
+       "libxcomposite1",
+       "libxdamage1",
+       "libxfixes3",
+       "libxrandr2",
+       "libgbm1",
+       "libasound2t64",
+       "libatspi2.0-0"
+   ]
+
+   [[io.buildpacks.group]]
+   uri = "heroku/deb-packages"
+   ```
+3. The above directives are required to install chormium and its dependant libraries required at runtime
+4. Use CHROMIUM_VERSION to specify a chromium version. Supported versions are listed here https://playwright.dev/docs/release-notes
+4. Commit and push to Heroku
+
+## Create a local OCI image
+To vaidate if the build executes correctly
    ```bash
-   heroku create your-app-name
+   pack build cnb-chromium-buildpack --buildpack . --builder heroku/builder:24
    ```
 
-2. Deploy the application:
+## Inspect the OCI image
+To test and inspect the image
    ```bash
-   git push heroku main
+   docker run -it --rm --name my-app-cnb-chromium-buildpack --entrypoint bash cnb-chromium-buildpack
    ```
 
-## Environment Variables
-
-The following environment variables are required for this app to run (see `app.json` for details):
-
-- `KONG_ADMIN_GUI_URL` (required): Public URL for Kong Manager GUI (e.g., https://my-kong-manager.herokuapp.com)
-- `KONG_ADMIN_GUI_API_URL` (required): External Admin API URL (e.g., https://admin-api.example.com)
-
-
-## ⚠️ Security Notice
-
-**This implementation does NOT provide a secured Kong Manager.**
-
-- There is no enforced HTTPS/SSL for the Kong Manager GUI.
-- No authentication or RBAC is enabled by default with Kon OSS.
-- The GUI is accessible to anyone who knows the URL.
-
-**Do NOT use this setup in production or for sensitive workloads without adding proper security controls (HTTPS, firewall, authentication, etc.).**
-
-## Configuration
-
-The Kong gateway is configured using the following files:
-- `kong.conf`: Main configuration file
-- `kong.yaml`: Declarative configuration for routes and services
-- `Dockerfile`: Container configuration and bootstrap script
-
-Environment variables are set via the Heroku dashboard or `app.json` and are required for proper operation.
-
-
-## Verification
-
-You can verify that Kong Manager is running properly by checking the logs:
-
-```bash
-heroku logs --tail
-```
-
-You should see messages indicating that Kong has started successfully and is listening for requests.
-
-Then you can open your Heorku app showing the Kong Manager GUI.
-
+## Package the buildpack
+To package the buildpack anytime is modified and then release it
+   ```bash
+   pack buildpack package cnb-chromium-buildpack --format file
+   ```
 
 ## Contributing
 
