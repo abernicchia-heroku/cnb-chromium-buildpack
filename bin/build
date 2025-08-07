@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "---> chromium buildpack (CNB style)"
+
+# remove all the files in the buildpack working directory that are not required for the build
+# Use a more robust approach that handles already-deleted files gracefully
+find . -mindepth 1 -maxdepth 1 ! -name "project.toml" ! -name "src" ! -name "package.json" ! -name "yarn.lock" ! -name "tsconfig.json" ! -name "puppeteer.config.cjs" -print0 | xargs -0 rm -rf 2>/dev/null || true
+
+CHROMIUM_BUILD_DIR="${CNB_LAYERS_DIR}/chromium"
+
+# Use the version from env or default to '1139' (latest on Aug 6, 2025)
+CHROMIUM_VERSION="${CHROMIUM_VERSION:-1139}"
+
+# caching logic for chromium see https://devcenter.heroku.com/articles/creating-cloud-native-buildpacks-from-classic-buildpacks
+if [[ -f "$CHROMIUM_BUILD_DIR/chromium-version" ]] && grep -q "$CHROMIUM_VERSION" "$CHROMIUM_BUILD_DIR/chromium-version" ; then
+  echo "Using chromium $CHROMIUM_VERSION from cache"
+  exit 0;
+fi
+
+### if you get here, the chromium version is not cached, so we need to download it ###
+
+# remove the cached build dir if it exists and re-create it for the chromium buildpack layer
+rm -rf "${CHROMIUM_BUILD_DIR}"
+mkdir -p $CHROMIUM_BUILD_DIR
+
+# Use the architecture from CNB_TARGET_ARCH that can be amd64 or arm64
+if [[ "${CNB_TARGET_ARCH}" == "amd64" ]]; then
+    CHROMIUM_ARCH=""
+else
+    CHROMIUM_ARCH="-arm64"
+fi
+
+# Download and install Chromium directly
+# https://playwright.azureedge.net/builds/chromium/1139/chromium-linux-arm64.zip
+# supported versions https://playwright.dev/docs/release-notes
+CHROMIUM_URL="https://playwright.azureedge.net/builds/chromium/${CHROMIUM_VERSION}/chromium-linux${CHROMIUM_ARCH}.zip"
+
+echo "Downloading Chromium $CHROMIUM_URL to $CHROMIUM_BUILD_DIR ..."
+
+wget --show-progress "$CHROMIUM_URL" -O /tmp/chromium-linux.zip
+unzip /tmp/chromium-linux.zip
+mv chrome-linux/* "$CHROMIUM_BUILD_DIR/"
+
+# Clean up
+rm -rf chrome-linux /tmp/chromium-linux.zip
+
+mkdir "$CHROMIUM_BUILD_DIR/bin"
+ln -sf "$CHROMIUM_BUILD_DIR/chrome" "$CHROMIUM_BUILD_DIR/bin/google-chrome-stable"
+
+echo "Chromium installed successfully at $CHROMIUM_BUILD_DIR"
+
+# save the version of chromium used in the build directory
+printf "%s" "$CHROMIUM_VERSION" > "${CHROMIUM_BUILD_DIR}/chromium-version"
+
+cat > "${CHROMIUM_BUILD_DIR}.toml" << EOL
+[types]
+build = true
+cache = true
+launch = true
+EOL
+
+

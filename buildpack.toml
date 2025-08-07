@@ -1,0 +1,14 @@
+api = "0.11"
+
+[buildpack]
+  id = "heroku/chromium"
+  version = "1.0.0"
+  name = chromium
+
+[[targets]]
+os = "linux"
+arch = "arm64"
+
+[[targets]]
+os = "linux"
+arch = "amd64"
