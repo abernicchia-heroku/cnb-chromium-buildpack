@@ -14,7 +14,7 @@ if [[ -f "$CHROMIUM_BUILD_DIR/chromium-version" ]] && grep -q "$CHROMIUM_VERSION
 else
   # remove the cached build dir if it exists and re-create it for the chromium buildpack layer
   rm -rf "${CHROMIUM_BUILD_DIR}"
-  mkdir -p $CHROMIUM_BUILD_DIR
+  mkdir -p "${CHROMIUM_BUILD_DIR}"
 
   # Use the architecture from CNB_TARGET_ARCH that can be amd64 or arm64
   if [[ "${CNB_TARGET_ARCH}" == "amd64" ]]; then
